@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Record Audio - MeetBot{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1>Record "Present" Audio</h1>
+    <p>Record yourself saying "present" or "present sir". This audio will be played in the meeting when your name is called.</p>
+
+    <div class="recorder-container">
+        <div class="recorder-status" id="recorder-status">Ready to record</div>
+
+        <div class="recorder-controls">
+            <button id="btn-record" class="btn btn-record" onclick="toggleRecording()">
+                Start Recording
+            </button>
+        </div>
+
+        <div id="playback-section" style="display: none;">
+            <h3>Preview your recording:</h3>
+            <audio id="audio-preview" controls></audio>
+            <div class="recorder-actions">
+                <button class="btn btn-primary" onclick="saveRecording()">Save Recording</button>
+                <button class="btn" onclick="discardRecording()">Discard & Re-record</button>
+            </div>
+        </div>
+
+        {% if recording %}
+        <div class="existing-recording">
+            <h3>Current saved recording:</h3>
+            <audio controls src="{{ url_for('audio.playback', recording_id=recording.id) }}"></audio>
+            <p class="text-muted">Recorded on {{ recording.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<div id="audio-upload-config" data-upload-url="{{ url_for('audio.upload') }}" hidden></div>
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+{% endblock %}

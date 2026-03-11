@@ -1,0 +1,650 @@
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: #1a1a2e;
+    border-bottom: 1px solid #2a2a4a;
+}
+
+.nav-brand {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #7c4dff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: #a0a0b0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #fff;
+}
+
+.nav-logout {
+    color: #ff5252;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Flash Messages */
+.flash-messages {
+    margin-bottom: 1.5rem;
+}
+
+.flash {
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.flash-error {
+    background: #2d1b1b;
+    color: #ff5252;
+    border: 1px solid #ff525240;
+}
+
+.flash-success {
+    background: #1b2d1b;
+    color: #4caf50;
+    border: 1px solid #4caf5040;
+}
+
+/* Auth Pages */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.auth-card {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card h1 {
+    color: #7c4dff;
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #a0a0b0;
+    margin-bottom: 0.4rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    background: #0f0f1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #7c4dff;
+}
+
+.form-group small {
+    display: block;
+    color: #555;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background: #2a2a4a;
+}
+
+.btn-primary {
+    background: #7c4dff;
+    border-color: #7c4dff;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #6a3de8;
+}
+
+.btn-danger {
+    background: #ff5252;
+    border-color: #ff5252;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #e04545;
+}
+
+.btn-full {
+    width: 100%;
+    text-align: center;
+}
+
+.btn-lg {
+    padding: 0.9rem 2.5rem;
+    font-size: 1.1rem;
+}
+
+.btn-sm {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-active {
+    background: #4caf50;
+    border-color: #4caf50;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.auth-switch a {
+    color: #7c4dff;
+    text-decoration: none;
+}
+
+/* Dashboard */
+.dashboard h1 {
+    margin-bottom: 0.3rem;
+}
+
+.status-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1.5rem;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+}
+
+.status-card.done {
+    border-color: #4caf5060;
+}
+
+.status-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #2a2a4a;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.status-card.done .status-icon {
+    background: #4caf5030;
+    color: #4caf50;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.status-info p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.profile-info {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+}
+
+.profile-info h3 {
+    margin-bottom: 0.8rem;
+    color: #7c4dff;
+}
+
+.profile-info p {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Recorder */
+.page-content {
+    max-width: 600px;
+}
+
+.page-content h1 {
+    margin-bottom: 0.5rem;
+}
+
+.page-content > p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.recorder-container {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.recorder-status {
+    text-align: center;
+    font-size: 1rem;
+    color: #a0a0b0;
+    margin-bottom: 1.5rem;
+    padding: 0.8rem;
+    border-radius: 8px;
+    background: #0f0f1a;
+}
+
+.recorder-status.recording {
+    color: #ff5252;
+    background: #2d1b1b;
+}
+
+.recorder-controls {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-record {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    background: #7c4dff;
+    border-color: #7c4dff;
+    color: #fff;
+    border-radius: 50px;
+}
+
+.btn-record.recording {
+    background: #ff5252;
+    border-color: #ff5252;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.recorder-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.existing-recording {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #2a2a4a;
+}
+
+.existing-recording h3 {
+    margin-bottom: 0.8rem;
+}
+
+.existing-recording audio {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+#playback-section audio {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.text-muted {
+    color: #555;
+    font-size: 0.85rem;
+}
+
+/* Google Setup */
+.setup-card {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.status-badge.done {
+    background: #4caf5020;
+    color: #4caf50;
+    border: 1px solid #4caf5040;
+}
+
+.status-badge.pending {
+    background: #ff525220;
+    color: #ff5252;
+    border: 1px solid #ff525240;
+}
+
+.setup-instructions {
+    margin-bottom: 1.5rem;
+}
+
+.setup-instructions h3 {
+    margin-bottom: 0.8rem;
+}
+
+.setup-instructions ol {
+    padding-left: 1.5rem;
+    line-height: 1.8;
+    color: #a0a0b0;
+}
+
+.launch-status {
+    margin-top: 1rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.launch-status.info {
+    background: #1a2a4a;
+    color: #64b5f6;
+    border: 1px solid #64b5f640;
+}
+
+.launch-status.success {
+    background: #1b2d1b;
+    color: #4caf50;
+    border: 1px solid #4caf5040;
+}
+
+.launch-status.error {
+    background: #2d1b1b;
+    color: #ff5252;
+    border: 1px solid #ff525240;
+}
+
+/* Join Meeting */
+.prerequisites {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.prerequisites h3 {
+    margin-bottom: 0.8rem;
+}
+
+.prereq-item {
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.prereq-item.done {
+    color: #4caf50;
+}
+
+.prereq-item.missing {
+    color: #ff5252;
+}
+
+.join-form {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.join-status {
+    margin-top: 1rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.join-status.info {
+    background: #1a2a4a;
+    color: #64b5f6;
+}
+
+.join-status.error {
+    background: #2d1b1b;
+    color: #ff5252;
+}
+
+.warning {
+    color: #ff9800;
+    background: #2d2a1b;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ff980040;
+}
+
+/* Meeting Status */
+.meeting-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.meeting-status-badge {
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #2a2a4a;
+}
+
+.status-joining {
+    background: #ff980030;
+    color: #ff9800;
+}
+
+.status-listening {
+    background: #4caf5030;
+    color: #4caf50;
+}
+
+.status-name_detected {
+    background: #7c4dff30;
+    color: #7c4dff;
+    animation: pulse 1s infinite;
+}
+
+.status-responded {
+    background: #4caf5030;
+    color: #4caf50;
+}
+
+.status-error {
+    background: #ff525230;
+    color: #ff5252;
+}
+
+.status-ended {
+    background: #2a2a4a;
+    color: #666;
+}
+
+.meeting-link {
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.meeting-link a {
+    color: #7c4dff;
+}
+
+.meeting-log {
+    background: #0a0a14;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.log-entry {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #1a1a2a;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    color: #555;
+    margin-right: 1rem;
+}
+
+.log-message {
+    color: #a0a0b0;
+}
+
+.log-highlight {
+    background: #7c4dff15;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border-bottom: none;
+}
+
+.log-highlight .log-message {
+    color: #7c4dff;
+    font-weight: 600;
+}
+
+.meeting-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f0f1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2a2a4a;
+    border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .container {
+        padding: 1rem;
+    }
+    .auth-card {
+        padding: 2rem;
+    }
+}

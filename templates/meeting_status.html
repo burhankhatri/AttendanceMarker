@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Meeting Status - MeetBot{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="meeting-header">
+        <h1>Meeting Status</h1>
+        <div class="meeting-status-badge" id="status-badge">{{ session.status }}</div>
+    </div>
+
+    <p class="meeting-link">Meeting: <a href="{{ session.meet_link }}" target="_blank">{{ session.meet_link }}</a></p>
+
+    <div class="meeting-log" id="meeting-log">
+        {% for entry in session.log %}
+        <div class="log-entry">
+            <span class="log-time">{{ entry.time }}</span>
+            <span class="log-message">{{ entry.message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="meeting-actions">
+        <button id="btn-stop" class="btn btn-danger" onclick="stopMeeting()">
+            Leave Meeting
+        </button>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const sessionId = {{ session.id }};
+    const socket = io();
+
+    socket.on('connect', function() {
+        socket.emit('join_session', {session_id: sessionId});
+    });
+
+    socket.on('meeting_update', function(data) {
+        if (data.session_id !== sessionId) return;
+
+        // Update status badge
+        const badge = document.getElementById('status-badge');
+        badge.textContent = data.status;
+        badge.className = 'meeting-status-badge status-' + data.status;
+
+        // Update log
+        const logDiv = document.getElementById('meeting-log');
+        logDiv.innerHTML = '';
+        for (const entry of data.log) {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            if (entry.message.includes('DETECTED')) {
+                div.className += ' log-highlight';
+            }
+            div.innerHTML = '<span class="log-time">' + entry.time + '</span>' +
+                           '<span class="log-message">' + entry.message + '</span>';
+            logDiv.appendChild(div);
+        }
+        logDiv.scrollTop = logDiv.scrollHeight;
+    });
+
+    // Also poll for updates as fallback
+    setInterval(async function() {
+        try {
+            const resp = await fetch('/meeting/status-data/' + sessionId);
+            const data = await resp.json();
+
+            const badge = document.getElementById('status-badge');
+            badge.textContent = data.status;
+            badge.className = 'meeting-status-badge status-' + data.status;
+
+            const logDiv = document.getElementById('meeting-log');
+            logDiv.innerHTML = '';
+            for (const entry of data.log) {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                if (entry.message.includes('DETECTED')) {
+                    div.className += ' log-highlight';
+                }
+                div.innerHTML = '<span class="log-time">' + entry.time + '</span>' +
+                               '<span class="log-message">' + entry.message + '</span>';
+                logDiv.appendChild(div);
+            }
+            logDiv.scrollTop = logDiv.scrollHeight;
+        } catch(e) {}
+    }, 3000);
+
+    async function stopMeeting() {
+        if (!confirm('Are you sure you want to leave the meeting?')) return;
+
+        const btn = document.getElementById('btn-stop');
+        btn.disabled = true;
+        btn.textContent = 'Leaving...';
+
+        try {
+            await fetch('/meeting/stop/' + sessionId, {method: 'POST'});
+            window.location.href = '{{ url_for("dashboard.dashboard") }}';
+        } catch(e) {
+            alert('Error: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = 'Leave Meeting';
+        }
+    }
+</script>
+{% endblock %}

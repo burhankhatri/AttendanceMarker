@@ -1,8 +1,11 @@
-Image==7.2.0              # via PIL           
-PyAutoGUI==0.9.52
-numpy==1.22.0
-re==7.2.1          
-cv2==4.5.1                     
-SpeechRecognition==3.8.1
-PyAudio==0.2.11  
-PyTesseract==0.3.4
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-SocketIO==5.3.6
+eventlet==0.35.1
+Werkzeug==3.0.1
+undetected-chromedriver==3.5.5
+selenium==4.15.2
+SpeechRecognition==3.10.1
+PyAudio==0.2.14
+pydub==0.25.1
+numpy==1.26.2

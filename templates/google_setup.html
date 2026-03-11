@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Google Setup - MeetBot{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1>Google Account Setup</h1>
+
+    <div class="setup-card">
+        {% if has_profile %}
+        <div class="status-badge done">Google Account Linked</div>
+        {% else %}
+        <div class="status-badge pending">Not Configured</div>
+        {% endif %}
+
+        <div class="setup-instructions">
+            <h3>How it works:</h3>
+            <ol>
+                <li>Select your Chrome profile below</li>
+                <li>Click launch — that same profile opens directly</li>
+                <li>Log into your Google account in that window</li>
+                <li>Close that Chrome window when done</li>
+            </ol>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+            <label for="chrome-profile-root">Chrome Profile</label>
+            <select id="chrome-profile-root">
+                <option value="">Select a profile</option>
+                {% for profile in available_profiles %}
+                <option
+                    value="{{ profile.root }}|||{{ profile.name }}"
+                    data-root="{{ profile.root }}"
+                    data-name="{{ profile.name }}"
+                    {% if selected_root == profile.root and selected_profile == profile.name %}selected{% endif %}
+                >
+                    {{ profile.display }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if not available_profiles %}
+            <small>No existing Chrome profiles detected. Check that Chrome is installed and has been run at least once.</small>
+            {% endif %}
+        </div>
+
+        <button id="btn-launch" class="btn btn-primary btn-lg" onclick="launchChrome()" {% if browser_open or not available_profiles %}disabled{% endif %}>
+            {% if browser_open %}
+                Login browser is open — log in and close it
+            {% elif has_profile %}
+                Re-login (update account)
+            {% else %}
+                Launch Chrome to Login
+            {% endif %}
+        </button>
+
+        <div id="status-msg" class="launch-status" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function launchChrome() {
+    const btn = document.getElementById('btn-launch');
+    const status = document.getElementById('status-msg');
+
+    btn.disabled = true;
+    btn.textContent = 'Launching...';
+    status.style.display = 'block';
+    status.textContent = 'Starting Chrome...';
+    status.className = 'launch-status info';
+
+    try {
+        const select = document.getElementById('chrome-profile-root');
+        const selectedOption = select.value;
+        if (!selectedOption) {
+            status.textContent = 'Please choose a Chrome profile first.';
+            status.className = 'launch-status error';
+            btn.disabled = false;
+            btn.textContent = 'Launch Chrome to Login';
+            return;
+        }
+
+        const profileName = select.options[select.selectedIndex].dataset.name;
+        const rootPath = select.options[select.selectedIndex].dataset.root;
+
+        const resp = await fetch('{{ url_for("google.launch_login") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                root_path: rootPath,
+                profile_name: profileName
+            })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            btn.textContent = 'Chrome is open — log into Google, then close it';
+            status.textContent = 'A Chrome window opened. Log into your Google account, then close the window.';
+            status.className = 'launch-status success';
+            // Poll until browser is closed
+            pollStatus();
+        } else {
+            status.textContent = data.error || 'Error';
+            status.className = 'launch-status error';
+            btn.disabled = false;
+            btn.textContent = 'Try Again';
+        }
+    } catch(e) {
+        status.textContent = 'Error: ' + e.message;
+        status.className = 'launch-status error';
+        btn.disabled = false;
+        btn.textContent = 'Try Again';
+    }
+}
+
+function pollStatus() {
+    const interval = setInterval(async () => {
+        try {
+            const resp = await fetch('{{ url_for("google.status") }}');
+            const data = await resp.json();
+            if (!data.browser_open) {
+                clearInterval(interval);
+                const status = document.getElementById('status-msg');
+                if (data.configured) {
+                    status.textContent = 'Google account linked successfully! Redirecting...';
+                    status.className = 'launch-status success';
+                    setTimeout(() => window.location.href = '/dashboard', 1500);
+                } else {
+                    status.textContent = 'Browser closed. Click to try again.';
+                    status.className = 'launch-status error';
+                    document.getElementById('btn-launch').disabled = false;
+                    document.getElementById('btn-launch').textContent = 'Launch Chrome to Login';
+                }
+            }
+        } catch(e) {}
+    }, 2000);
+}
+
+{% if browser_open %}
+pollStatus();
+{% endif %}
+</script>
+{% endblock %}

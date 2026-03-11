@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - MeetBot{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Welcome, {{ settings.display_name or 'User' }}</h1>
+    <p class="subtitle">Complete the setup steps below, then join a meeting.</p>
+
+    <div class="status-cards">
+        <div class="status-card {{ 'done' if has_recording else 'pending' }}">
+            <div class="status-icon">{{ '✓' if has_recording else '1' }}</div>
+            <div class="status-info">
+                <h3>Record "Present" Audio</h3>
+                <p>{{ 'Recording saved' if has_recording else 'Record yourself saying "present"' }}</p>
+            </div>
+            <a href="{{ url_for('audio.record') }}" class="btn btn-sm">
+                {{ 'Re-record' if has_recording else 'Record' }}
+            </a>
+        </div>
+
+        <div class="status-card {{ 'done' if has_google else 'pending' }}">
+            <div class="status-icon">{{ '✓' if has_google else '2' }}</div>
+            <div class="status-info">
+                <h3>Connect Google Account</h3>
+                <p>{{ 'Google profile linked' if has_google else 'Link your Google account for Meet access' }}</p>
+            </div>
+            <a href="{{ url_for('google.setup') }}" class="btn btn-sm">
+                {{ 'Reconfigure' if has_google else 'Setup' }}
+            </a>
+        </div>
+
+        <div class="status-card {{ 'done' if active_session else 'ready' if (has_recording and has_google) else 'pending' }}">
+            <div class="status-icon">{{ '●' if active_session else '3' }}</div>
+            <div class="status-info">
+                <h3>Join a Meeting</h3>
+                {% if active_session %}
+                <p>Active session: {{ active_session.status }}</p>
+                {% elif has_recording and has_google %}
+                <p>Ready to join a meeting!</p>
+                {% else %}
+                <p>Complete steps 1 and 2 first</p>
+                {% endif %}
+            </div>
+            {% if active_session %}
+            <a href="{{ url_for('meeting.status', session_id=active_session.id) }}" class="btn btn-sm btn-active">
+                View Status
+            </a>
+            {% elif has_recording and has_google %}
+            <a href="{{ url_for('meeting.join') }}" class="btn btn-sm btn-primary">
+                Join Meeting
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-info">
+        <h3>Detection Settings</h3>
+        <p><strong>Name:</strong> {{ settings.display_name }}</p>
+        {% if settings.roll_number %}
+        <p><strong>Roll Number:</strong> {{ settings.roll_number }}</p>
+        {% endif %}
+        {% if settings.name_variants %}
+        <p><strong>Name Variants:</strong> {{ settings.name_variants | join(', ') }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

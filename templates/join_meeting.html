@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Join Meeting - MeetBot{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1>Join a Meeting</h1>
+
+    <div class="prerequisites">
+        <h3>Prerequisites:</h3>
+        <div class="prereq-item {{ 'done' if has_recording else 'missing' }}">
+            {{ '✓' if has_recording else '✗' }} Audio recorded
+        </div>
+        <div class="prereq-item {{ 'done' if has_google else 'missing' }}">
+            {{ '✓' if has_google else '✗' }} Google profile linked
+        </div>
+    </div>
+
+    {% if has_recording and has_google %}
+    <div class="join-form">
+        <div class="form-group">
+            <label for="meet_link">Google Meet Link</label>
+            <input type="url" id="meet_link" name="meet_link"
+                   placeholder="https://meet.google.com/abc-defg-hij"
+                   pattern="https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}.*"
+                   required>
+            <small>Paste the full Google Meet URL</small>
+        </div>
+        <button id="btn-join" class="btn btn-primary btn-lg" onclick="joinMeeting()">
+            Join Meeting
+        </button>
+        <div id="join-status" class="join-status" style="display: none;"></div>
+    </div>
+    {% else %}
+    <p class="warning">Please complete all prerequisites before joining a meeting.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function joinMeeting() {
+    const link = document.getElementById('meet_link').value.trim();
+    const btn = document.getElementById('btn-join');
+    const status = document.getElementById('join-status');
+
+    if (!link) {
+        alert('Please enter a Google Meet link');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Starting bot...';
+    status.style.display = 'block';
+    status.textContent = 'Launching meeting bot...';
+    status.className = 'join-status info';
+
+    try {
+        const formData = new FormData();
+        formData.append('meet_link', link);
+
+        const resp = await fetch('{{ url_for("meeting.start") }}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            window.location.href = '/meeting/status/' + data.session_id;
+        } else {
+            status.textContent = 'Error: ' + (data.error || 'Unknown error');
+            status.className = 'join-status error';
+            btn.disabled = false;
+            btn.textContent = 'Join Meeting';
+
+            if (data.session_id) {
+                status.innerHTML += '<br><a href="/meeting/status/' + data.session_id + '">View active session</a>';
+            }
+        }
+    } catch(e) {
+        status.textContent = 'Error: ' + e.message;
+        status.className = 'join-status error';
+        btn.disabled = false;
+        btn.textContent = 'Join Meeting';
+    }
+}
+</script>
+{% endblock %}

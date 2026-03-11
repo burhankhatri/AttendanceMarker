@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Setup - MeetBot{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1>Profile Setup</h1>
+    <p class="subtitle">Set up your attendance name once and store it as the single user profile.</p>
+
+    <form method="POST" action="{{ url_for('settings.setup') }}" class="setup-form">
+        <div class="form-group">
+            <label for="display_name">Your Name</label>
+            <input id="display_name" name="display_name" required
+                   value="{{ settings.display_name }}" placeholder="e.g., Ahmed Ali">
+            <small>The name your teacher calls.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="roll_number">Roll Number (optional)</label>
+            <input id="roll_number" name="roll_number" value="{{ settings.roll_number or '' }}"
+                   placeholder="e.g., 2024123">
+        </div>
+
+        <div class="form-group">
+            <label for="name_variants">Name Variants (comma-separated)</label>
+            <input id="name_variants" name="name_variants"
+                   value="{{ settings.name_variants | join(', ') }}"
+                   placeholder="e.g., ahmed, ah-med, ahmed al">
+            <small>How speech recognition may mishear your name.</small>
+        </div>
+
+        <button class="btn btn-primary btn-full" type="submit">Save Settings</button>
+    </form>
+</div>
+{% endblock %}
