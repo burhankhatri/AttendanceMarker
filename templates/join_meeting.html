@@ -8,23 +8,31 @@
     <div class="prerequisites">
         <h3>Prerequisites:</h3>
         <div class="prereq-item {{ 'done' if has_recording else 'missing' }}">
-            {{ '✓' if has_recording else '✗' }} Audio recorded
+            {{ 'OK' if has_recording else 'X' }} Audio recorded
         </div>
-        <div class="prereq-item {{ 'done' if has_google else 'missing' }}">
-            {{ '✓' if has_google else '✗' }} Google profile linked
+        <div class="prereq-item {{ 'done' if has_profile else 'missing' }}">
+            {{ 'OK' if has_profile else 'X' }} Browser profile linked
         </div>
     </div>
 
-    {% if has_recording and has_google %}
+    {% if has_recording and has_profile %}
     <div class="join-form">
         <div class="form-group">
-            <label for="meet_link">Google Meet Link</label>
-            <input type="url" id="meet_link" name="meet_link"
-                   placeholder="https://meet.google.com/abc-defg-hij"
-                   pattern="https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}.*"
-                   required>
-            <small>Paste the full Google Meet URL</small>
+            <label for="provider">Meeting Provider</label>
+            <select id="provider" name="provider" onchange="updateProviderHint()">
+                <option value="meet">Google Meet</option>
+                <option value="teams">Microsoft Teams</option>
+            </select>
         </div>
+
+        <div class="form-group">
+            <label for="meeting_link">Meeting Link</label>
+            <input type="url" id="meeting_link" name="meeting_link"
+                   placeholder="https://meet.google.com/abc-defg-hij"
+                   required>
+            <small id="provider-hint">Paste a full Google Meet or Teams web meeting URL.</small>
+        </div>
+
         <button id="btn-join" class="btn btn-primary btn-lg" onclick="joinMeeting()">
             Join Meeting
         </button>
@@ -38,13 +46,40 @@
 
 {% block scripts %}
 <script>
+function updateProviderHint() {
+    const provider = document.getElementById('provider').value;
+    const input = document.getElementById('meeting_link');
+    const hint = document.getElementById('provider-hint');
+    if (provider === 'teams') {
+        input.placeholder = 'https://teams.microsoft.com/l/meetup-join/...';
+        hint.textContent = 'Use a Teams web meeting link. Signed-in browser profile is required.';
+    } else {
+        input.placeholder = 'https://meet.google.com/abc-defg-hij';
+        hint.textContent = 'Use a Google Meet URL or switch provider to Teams.';
+    }
+}
+
+function inferProvider(link) {
+    const value = (link || '').toLowerCase();
+    if (value.includes('teams.microsoft.com') || value.includes('teams.live.com') || value.includes('teams.office.com')) {
+        return 'teams';
+    }
+    if (value.includes('meet.google.com')) {
+        return 'meet';
+    }
+    return null;
+}
+
 async function joinMeeting() {
-    const link = document.getElementById('meet_link').value.trim();
+    const link = document.getElementById('meeting_link').value.trim();
+    const providerSelect = document.getElementById('provider');
+    const inferredProvider = inferProvider(link);
+    const provider = inferredProvider || providerSelect.value;
     const btn = document.getElementById('btn-join');
     const status = document.getElementById('join-status');
 
     if (!link) {
-        alert('Please enter a Google Meet link');
+        alert('Please enter a meeting link');
         return;
     }
 
@@ -56,7 +91,8 @@ async function joinMeeting() {
 
     try {
         const formData = new FormData();
-        formData.append('meet_link', link);
+        formData.append('meeting_link', link);
+        formData.append('provider', provider);
 
         const resp = await fetch('{{ url_for("meeting.start") }}', {
             method: 'POST',
@@ -66,22 +102,25 @@ async function joinMeeting() {
 
         if (data.success) {
             window.location.href = '/meeting/status/' + data.session_id;
-        } else {
-            status.textContent = 'Error: ' + (data.error || 'Unknown error');
-            status.className = 'join-status error';
-            btn.disabled = false;
-            btn.textContent = 'Join Meeting';
-
-            if (data.session_id) {
-                status.innerHTML += '<br><a href="/meeting/status/' + data.session_id + '">View active session</a>';
-            }
+            return;
         }
-    } catch(e) {
+
+        status.textContent = 'Error: ' + (data.error || 'Unknown error');
+        status.className = 'join-status error';
+        btn.disabled = false;
+        btn.textContent = 'Join Meeting';
+
+        if (data.session_id) {
+            status.innerHTML += '<br><a href="/meeting/status/' + data.session_id + '">View active session</a>';
+        }
+    } catch (e) {
         status.textContent = 'Error: ' + e.message;
         status.className = 'join-status error';
         btn.disabled = false;
         btn.textContent = 'Join Meeting';
     }
 }
+
+updateProviderHint();
 </script>
 {% endblock %}

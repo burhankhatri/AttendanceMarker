@@ -1,89 +1,101 @@
-<h2 align = 'center'>AUTOMATED ATTENDING SYSTEM</h2>
+# MeetBot
 
-
-
-
-Watch the YouTube tutorial on how to use this [here!](https://www.youtube.com/watch?v=fKa-_8R9auM)
-<p>The <b><i>Automated Attending Bot</i></b> is built on Python and its main purpose is to attend your online meetings/classes <i>for you</i>.
- 
-This bot gets the meeting ID of your meeting from Google Docs (note: your friend can upload this for you if you can't) and opens Google Meet and logs in on your behalf.
-
-It can use both Speech Recognition and Image Processing techniques to interact with other people in the meeting.
-
-Once the meeting is done, it closes the Google Chrome page and this process continues every time you have an online class .
-
-<i><b>Speech Recognition</b></i> is used to identify whether your enrollment number is being called out during attendance and the bot automatically types "present" in the chatbox.
-
-<i><b>Image Processing</b></i> is used to convert all the messages in the chatbox into an array of strings and uses some string manipulation techniques to find the most common phrase most of the students said and type it in the chat box. For example, if 5 people said the answer was "11.5", the bot will type "11.5" in the chatbox and send it.
-
+<p align="center">
+  A simple local app to help you manage attendance-style workflows for Google Meet and Microsoft Teams.
 </p>
 
-Libraries used:
-1) <b>Image:</b>
-Used for image processing.
-View the documentation [here.](https://pillow.readthedocs.io/en/stable/)
+---
 
-2) <b>WinSound:</b>
-Can be used for playing a pre-recorded voice note of yourself saying "present". In this project, it has been used for signalling purposes.
-View the documentation [here.](https://docs.python.org/3.1/library/winsound.html)
+## What This App Does
 
-3) <b>PyAutoGUI:</b>
-Simulates the mouse and keyboard.
-View the documentation [here.](https://pyautogui.readthedocs.io/en/latest/)
+MeetBot gives you one place to:
 
-4) <b>PyTesseract:</b>
-Converts images to text.
-View the documentation [here.](https://pypi.org/project/pytesseract/)
+- save your attendance identity (name, roll number, name variants),
+- record your "present" audio once,
+- connect your real browser profile,
+- join a Meet or Teams link from the app,
+- track live session status from a clean dashboard.
 
-5) <b>RE:</b>
-Regular expressions for NLP.
-View the documentation [here.](https://docs.python.org/3/library/re.html)
+---
 
-6) <b>Cv2:</b>
-Used for image processing.
-View the documentation [here.](https://opencv-python-tutroals.readthedocs.io/en/latest/)
+## What Changed Recently
 
-7) <b>DateTime:</b>
-Used to time the speech recognition and the image processing algorithms and give them specific times to run
-View the documentation [here.](https://docs.python.org/3/library/datetime.html)
+- Microsoft Edge support was improved.
+- Google Chrome support remains available.
+- Microsoft Teams flow is now included alongside Google Meet.
+- Browser setup became easier with profile detection.
+- Meeting status page now gives clearer live updates.
 
-8) <b>speech_recognition:</b>
-Used for speech to text conversion. 
-View the documentation [here.](https://pypi.org/project/SpeechRecognition/)
+---
 
-9) <b>PyAudio:</b>
-Used to access the microphone.
-View the documentation [here.](https://people.csail.mit.edu/hubert/pyaudio/docs/)
-#### Compatibility:
+## Quick Start
 
-Changing the coordinates in PyAutoGUI is more than enough to implement this code on Google Meet, Zoom Meetings, Microsoft Teams or any other software you use to attend class.<br>
+### 1. Install
 
+```bash
+pip install -r requirements.txt
+```
 
-#### CHANGES YOU HAVE TO MAKE:
+### 2. Start the app
 
-<p>A small amount of the code you see in this repository is hardcoded w.r.t to my computer.
-Changes that you have to make to implement this on your computer are:<p\>
+```bat
+start.bat
+```
 
-1) Change all the coordinates that PyAutoGUI uses. Refer to `coordinate_finder.py` to find the coordinates which are suitable for you (if you didn't understand any of this, please read the PyAutoGUI documentation).<br>
-2) Change the file paths.<br>
-3) Change the size of the crop in `crop=img1[280:911,1520:1900]` to `crop=img1[y1:y2,x1:x2]` where `x1`, `x2`, `y1` and `y2` are coordinates of the chatbox in the online classroom software (i.e Google Meet/ Zoom etc.)<br>
+If needed, you can also run:
 
-These changes can be made in the global variables that is mentioned in the bunk_bot.py file. Can be found in the 15th line.
+```bash
+python app.py
+```
 
-#### Fixes and Patches:
-1) An unknown exception thrown during image processing has been handled.<br>  
-2) Circular import error has been fixed<br>
-3) Test files to check the working of the PyTesseract and Speech Recognition Libraries have been added to the folder Test Files. Use these to verify that you've downloaded them and that they're working.<br>
+### 3. Open dashboard
 
-#### Places to improve:
-Currently planning on making a ChatBot which can hopefully have full fleged conversations.\
-Please contribute and make this better lads.
+Go to:
 
-<h3>PLEASE NOTE:</h3>
-<p>For legal reasons,<br>
-This bot was purely made for <b><i>educational</i></b> purposes only and is meant as a fun way to learn and implement the libraries/packages mentioned above. <br>
-This bot is not meant to be used in any malicious way and we are not responsible for anyone actually using this bot to wrongfully attend online classes on his/her/their behalf.</p>
+`http://127.0.0.1:5001/dashboard`
 
+---
 
+## First-Time Setup (In App)
 
+Follow these pages in order:
 
+1. **Dashboard**
+2. **Settings**
+   - Enter your display name.
+   - Add roll number and name variants if you want better detection.
+3. **Record Audio**
+   - Record your "present" response.
+4. **Browser Setup**
+   - Choose **Edge** or **Chrome**.
+   - Select the profile you actually use for Meet/Teams.
+   - Click launch, confirm you are signed in, then close that browser window.
+5. **Join Meeting**
+   - Paste a Meet or Teams link and start.
+
+---
+
+## Daily Use
+
+1. Open **Join Meeting**.
+2. Paste your meeting link.
+3. Start the session.
+4. Watch **Meeting Status** for live progress.
+5. Click **Leave Meeting** when done.
+
+---
+
+## Known Issues
+
+- Browser profile access can fail if the same profile is busy.
+- If your login session expires, run Browser Setup again.
+- Meet/Teams interface updates can occasionally affect join flow.
+- Some sessions may need a retry if the platform is slow to load.
+
+---
+
+### PLEASE NOTE:
+
+For legal reasons,  
+This bot was purely made for ***educational*** purposes only and is meant as a fun way to learn and implement the libraries/packages mentioned above.   
+This bot is not meant to be used in any malicious way and we are not responsible for anyone actually using this bot to wrongfully attend online classes on his/her/their behalf.

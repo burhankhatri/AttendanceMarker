@@ -4,11 +4,11 @@
 {% block content %}
 <div class="dashboard">
     <h1>Welcome, {{ settings.display_name or 'User' }}</h1>
-    <p class="subtitle">Complete the setup steps below, then join a meeting.</p>
+    <p class="subtitle">Complete setup steps, then join Meet or Teams.</p>
 
     <div class="status-cards">
         <div class="status-card {{ 'done' if has_recording else 'pending' }}">
-            <div class="status-icon">{{ '✓' if has_recording else '1' }}</div>
+            <div class="status-icon">{{ 'OK' if has_recording else '1' }}</div>
             <div class="status-info">
                 <h3>Record "Present" Audio</h3>
                 <p>{{ 'Recording saved' if has_recording else 'Record yourself saying "present"' }}</p>
@@ -18,24 +18,35 @@
             </a>
         </div>
 
-        <div class="status-card {{ 'done' if has_google else 'pending' }}">
-            <div class="status-icon">{{ '✓' if has_google else '2' }}</div>
+        <div class="status-card {{ 'done' if has_profile else 'pending' }}">
+            <div class="status-icon">{{ 'OK' if has_profile else '2' }}</div>
             <div class="status-info">
-                <h3>Connect Google Account</h3>
-                <p>{{ 'Google profile linked' if has_google else 'Link your Google account for Meet access' }}</p>
+                <h3>Browser Profile Setup</h3>
+                {% if settings.profile_mode == 'managed_folder' %}
+                <p>Managed Edge folder active: {{ settings.managed_user_data_dir }}</p>
+                {% if settings.last_session_sync_at %}
+                <p>Last sync: {{ settings.last_session_sync_at }}</p>
+                {% else %}
+                <p>No sync run yet. Use Browser Setup to sync login.</p>
+                {% endif %}
+                {% elif has_profile %}
+                <p>Linked browser profile active</p>
+                {% else %}
+                <p>Link browser profile or switch to Managed Edge Folder mode</p>
+                {% endif %}
             </div>
             <a href="{{ url_for('google.setup') }}" class="btn btn-sm">
-                {{ 'Reconfigure' if has_google else 'Setup' }}
+                Browser Setup
             </a>
         </div>
 
-        <div class="status-card {{ 'done' if active_session else 'ready' if (has_recording and has_google) else 'pending' }}">
-            <div class="status-icon">{{ '●' if active_session else '3' }}</div>
+        <div class="status-card {{ 'done' if active_session else 'ready' if (has_recording and has_profile) else 'pending' }}">
+            <div class="status-icon">{{ 'LIVE' if active_session else '3' }}</div>
             <div class="status-info">
                 <h3>Join a Meeting</h3>
                 {% if active_session %}
-                <p>Active session: {{ active_session.status }}</p>
-                {% elif has_recording and has_google %}
+                <p>Active {{ active_session.provider|upper }} session: {{ active_session.status }}</p>
+                {% elif has_recording and has_profile %}
                 <p>Ready to join a meeting!</p>
                 {% else %}
                 <p>Complete steps 1 and 2 first</p>
@@ -45,7 +56,7 @@
             <a href="{{ url_for('meeting.status', session_id=active_session.id) }}" class="btn btn-sm btn-active">
                 View Status
             </a>
-            {% elif has_recording and has_google %}
+            {% elif has_recording and has_profile %}
             <a href="{{ url_for('meeting.join') }}" class="btn btn-sm btn-primary">
                 Join Meeting
             </a>

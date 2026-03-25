@@ -1,94 +1,68 @@
-import re
-import threading
 import os
-import json
-import time
-from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, current_app
+import threading
+from datetime import datetime, timedelta
+
+from flask import Blueprint, abort, current_app, jsonify, render_template, request
+
 from database.db import db
-from database.models import Settings, AudioRecording, MeetingSession
+from database.models import AudioRecording, MeetingSession, Settings
+from services.provider_routing import resolve_provider, validate_link_for_provider
 
 meeting_bp = Blueprint('meeting', __name__)
 
+TERMINAL_STATES = {'ended', 'error', 'needs_reauth', 'unsupported_flow'}
 
-def _debug_log(run_id, hypothesis_id, location, message, data=None):
-    payload = {
-        'sessionId': 'c9aaec',
-        'runId': run_id,
-        'hypothesisId': hypothesis_id,
-        'location': location,
-        'message': message,
-        'data': data or {},
-        'timestamp': int(time.time() * 1000)
-    }
-    try:
-        # region agent log
-        with open('/Users/burhankhatri/Documents/MeetingAttender/Automated_Attending_System/.cursor/debug-c9aaec.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps(payload, ensure_ascii=True) + '\n')
-        # endregion
-    except Exception:
-        pass
+
+def _is_browser_profile_ready(settings):
+    if not settings:
+        return False
+
+    return (
+        bool(settings.chrome_profile_path)
+        and bool(settings.chrome_profile_name)
+        and os.path.isdir(os.path.join(settings.chrome_profile_path, settings.chrome_profile_name))
+    )
 
 
 @meeting_bp.route('/join')
 def join():
     settings = Settings.get()
     has_recording = AudioRecording.query.first() is not None
-    has_google = (
-        settings.chrome_profile_path is not None and
-        settings.chrome_profile_name is not None and
-        os.path.isdir(os.path.join(settings.chrome_profile_path, settings.chrome_profile_name))
-    ) if settings else False
-    return render_template('join_meeting.html', has_recording=has_recording, has_google=has_google)
+    has_profile = _is_browser_profile_ready(settings)
+    return render_template('join_meeting.html', has_recording=has_recording, has_profile=has_profile)
 
 
 @meeting_bp.route('/start', methods=['POST'])
 def start():
-    meet_link = request.form.get('meet_link', '').strip()
-    # region agent log
-    _debug_log(
-        run_id='initial',
-        hypothesis_id='H1',
-        location='routes/meeting.py:start',
-        message='Received start request',
-        data={'meet_link': meet_link}
+    meeting_link = (
+        request.form.get('meeting_link', '').strip()
+        or request.form.get('meet_link', '').strip()
     )
-    # endregion
+    provider_override = request.form.get('provider', '').strip()
+    provider = resolve_provider(meeting_link, provider_override)
 
-    if not re.match(r'https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}', meet_link):
-        return jsonify({'error': 'Invalid Google Meet link format'}), 400
+    if not provider:
+        return jsonify({'error': 'Unsupported meeting provider. Use a Google Meet or Microsoft Teams link.'}), 400
+
+    if not validate_link_for_provider(meeting_link, provider):
+        return jsonify({'error': f'Invalid {provider.title()} meeting link format'}), 400
 
     recording = AudioRecording.query.first()
     if not recording:
         return jsonify({'error': 'Please record your "present" audio first'}), 400
 
     settings = Settings.get()
-    if (
-        not settings.chrome_profile_path
-        or not settings.chrome_profile_name
-        or not os.path.isdir(os.path.join(settings.chrome_profile_path, settings.chrome_profile_name))
-    ):
-        return jsonify({'error': 'Please set up your Google profile first'}), 400
+    if not _is_browser_profile_ready(settings):
+        return jsonify({'error': 'Please set up your browser profile first'}), 400
 
-    active = MeetingSession.query.filter(
-        MeetingSession.status.notin_(['ended', 'error'])
-    ).first()
+    active = MeetingSession.query.filter(MeetingSession.status.notin_(list(TERMINAL_STATES))).first()
     if active:
         return jsonify({'error': 'Already have an active meeting session', 'session_id': active.id}), 400
 
-    session = MeetingSession(meet_link=meet_link, status='pending')
-    session.add_log('Meeting session created')
+    session = MeetingSession(meet_link=meeting_link, provider=provider, status='pending')
+    session.add_log(f'{provider.title()} meeting session created')
     db.session.add(session)
     db.session.commit()
-    # region agent log
-    _debug_log(
-        run_id='initial',
-        hypothesis_id='H1',
-        location='routes/meeting.py:start',
-        message='Meeting session committed',
-        data={'session_id': session.id}
-    )
-    # endregion
 
     session_id = session.id
     flask_app = current_app._get_current_object()
@@ -101,43 +75,55 @@ def start():
         with flask_app.app_context():
             bot = MeetingBot(
                 session_id=session_id,
-                meet_link=meet_link,
-                socketio=sio
+                meeting_link=meeting_link,
+                provider=provider,
+                socketio=sio,
             )
-            active_bots[1] = bot
+            active_bots[session_id] = bot
             try:
                 bot.run()
             finally:
-                active_bots.pop(1, None)
+                active_bots.pop(session_id, None)
 
-    t = threading.Thread(target=run_bot, daemon=True)
-    t.start()
+    thread = threading.Thread(target=run_bot, daemon=True)
+    thread.start()
 
-    return jsonify({'success': True, 'session_id': session.id})
+    return jsonify({'success': True, 'session_id': session.id, 'provider': provider})
 
 
 @meeting_bp.route('/status/<int:session_id>')
 def status(session_id):
-    session = MeetingSession.query.get_or_404(session_id)
+    session = db.session.get(MeetingSession, session_id)
+    if session is None:
+        abort(404)
     return render_template('meeting_status.html', session=session)
 
 
 @meeting_bp.route('/status-data/<int:session_id>')
 def status_data(session_id):
-    session = MeetingSession.query.get_or_404(session_id)
-    return jsonify({
-        'status': session.status,
-        'log': session.log,
-        'meet_link': session.meet_link
-    })
+    session = db.session.get(MeetingSession, session_id)
+    if session is None:
+        abort(404)
+    return jsonify(
+        {
+            'status': session.status,
+            'log': session.log,
+            'meeting_link': session.meet_link,
+            'meet_link': session.meet_link,
+            'provider': session.provider,
+        }
+    )
 
 
 @meeting_bp.route('/stop/<int:session_id>', methods=['POST'])
 def stop(session_id):
-    session = MeetingSession.query.get_or_404(session_id)
+    session = db.session.get(MeetingSession, session_id)
+    if session is None:
+        abort(404)
 
     from app import active_bots
-    bot = active_bots.get(1)
+
+    bot = active_bots.get(session_id)
     if bot:
         bot.stop()
 

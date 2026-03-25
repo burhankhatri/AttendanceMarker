@@ -1,7 +1,19 @@
-.idea
+.idea/
 .venv/
 __pycache__/
 instance/
-uploads/audio/
+uploads/
+.pytest_cache/
+tests/
+
+# Agent and IDE folders
+.agents/
+agents/
+.codex/
+.cursor/
+
+# Ignore compiled files
 *.pyc
 .DS_Store
+*.db
+*.sqlite3

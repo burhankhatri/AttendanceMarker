@@ -7,4 +7,5 @@ SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(BASE_DIR, "instance", "app.d
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads', 'audio')
 CHROME_PROFILES_DIR = os.path.expanduser('~/.chrome-meet-profiles')
+DEFAULT_MANAGED_EDGE_USER_DATA_DIR = r'C:\meetbot_session'
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload
